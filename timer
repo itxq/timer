@@ -1,0 +1,12 @@
+#!/usr/bin/env php
+<?php
+
+use itxq\timer\Timer;
+
+include_once __DIR__ . '/vendor/autoload.php';
+
+$timerConfig = include __DIR__ . '/test/config.php';
+
+$vendorPath = __DIR__ . '/vendor/';
+
+(new Timer((array)$timerConfig, $vendorPath))->run();

@@ -1,0 +1,29 @@
+{
+    "name"        : "itxq/timer",
+    "description" : "php定时任务管理",
+    "type"        : "library",
+    "license"     : "Apache-2.0",
+    "authors"     : [
+        {
+            "name"    : "IT小强xqitw.cn",
+            "email"   : "mail@xqitw.cn",
+            "homepage": "https://www.xqitw.cn/"
+        }
+    ],
+    "require"     : {
+        "php"            : ">=7.1.0",
+        "taskphp/taskphp": "dev-master"
+    },
+    "require-dev" : {
+    },
+    "autoload"    : {
+        "psr-4": {
+            "itxq\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "test\\": "test"
+        }
+    }
+}
