@@ -53,9 +53,8 @@ class Timer
             Console::display('未指定vendor目录', true);
         }
         $this->vendorPath = realpath($vendorPath) . $this->ds;
-        require $this->vendorPath . 'taskphp' . $this->ds . 'taskphp' . $this->ds . 'src' . $this->ds . 'taskphp' . $this->ds . 'base.php';
-        
         $this->config = array_merge($this->config, $config);
+        require dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'taskphp' . DIRECTORY_SEPARATOR . 'base.php';
     }
     
     /**
