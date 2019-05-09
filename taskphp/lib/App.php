@@ -82,17 +82,17 @@ class App{
             $list=Utils::config('task_list');
         }else{
             $list=[$value=>Utils::config('task_list.'.$value)];
-        } 
+        }
         $progress=0;
         $progress_count=self::compute_process_count($list);
         printf("progress: [%-50s] %d%%\r", str_repeat('#',$progress/$progress_count*50), $progress/$progress_count*100);
         sleep(1);
         foreach (self::$_process_list as $key=>$val){
-            self::$_process_list[$key]['pid'][]=popen(self::get_path().' '.Command::$_cmd.' '.self::$_process_list[$key]['process_name'], 'r');
+            self::$_process_list[$key]['pid'][]=popen('nohup ' . self::get_path().' '.Command::$_cmd.' '.self::$_process_list[$key]['process_name'].' &', 'r');
             $progress++;
             printf("progress: [%-50s] %d%%\r", str_repeat('#',$progress/$progress_count*50), $progress/$progress_count*100);
             sleep(1);
-        }  
+        }
         if(is_array($list) && count($list)){
             foreach ($list as $key=>$val){
                 self::$_process_list[$key]=$list[$key];
@@ -102,7 +102,7 @@ class App{
                 Utils::cache('close_worker','false');
                 if(self::$_process_list[$key]['worker_count']){
                     for($i=1;$i<=self::$_process_list[$key]['worker_count'];$i++){
-                        self::$_process_list[$key]['pid'][] = popen(self::get_path().' '.Command::$_cmd.' worker '.$key, 'r');
+                        self::$_process_list[$key]['pid'][] = popen('nohup ' . self::get_path().' '.Command::$_cmd.' worker '.$key.' &', 'r');
                         $progress++;
                         printf("progress: [%-50s] %d%%\r", str_repeat('#',$progress/$progress_count*50), $progress/$progress_count*100);
                         sleep(1);
@@ -144,7 +144,7 @@ class App{
                     Utils::cache('listen'.$key,'true');
                     Utils::cache('close_worker','false');
                     for($i=1;$i<=self::$_process_list[$key]['worker_count'];$i++){
-                        self::$_process_list[$key]['pid'][] = popen(self::get_path().' '.Command::$_cmd.' worker '.$key, 'r');
+                        self::$_process_list[$key]['pid'][] = popen('nohup ' .self::get_path().' '.Command::$_cmd.' worker '.$key.' &', 'r');
                     }
                 }
                 Console::log($key.' start success');
