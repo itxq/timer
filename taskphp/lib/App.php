@@ -83,12 +83,13 @@ class App{
         }else{
             $list=[$value=>Utils::config('task_list.'.$value)];
         }
+        $nohup = self::getNohup();
         $progress=0;
         $progress_count=self::compute_process_count($list);
         printf("progress: [%-50s] %d%%\r", str_repeat('#',$progress/$progress_count*50), $progress/$progress_count*100);
         sleep(1);
         foreach (self::$_process_list as $key=>$val){
-            self::$_process_list[$key]['pid'][]=popen('nohup ' . self::get_path().' '.Command::$_cmd.' '.self::$_process_list[$key]['process_name'].' &', 'r');
+            self::$_process_list[$key]['pid'][]=popen((empty($nohup)?'':'nohup ') . self::get_path().' '.Command::$_cmd.' '.self::$_process_list[$key]['process_name'].(empty($nohup)?'':$nohup), 'r');
             $progress++;
             printf("progress: [%-50s] %d%%\r", str_repeat('#',$progress/$progress_count*50), $progress/$progress_count*100);
             sleep(1);
@@ -102,7 +103,7 @@ class App{
                 Utils::cache('close_worker','false');
                 if(self::$_process_list[$key]['worker_count']){
                     for($i=1;$i<=self::$_process_list[$key]['worker_count'];$i++){
-                        self::$_process_list[$key]['pid'][] = popen('nohup ' . self::get_path().' '.Command::$_cmd.' worker '.$key.' &', 'r');
+                        self::$_process_list[$key]['pid'][] = popen((empty($nohup)?'':'nohup ') .  self::get_path().' '.Command::$_cmd.' worker '.$key.(empty($nohup)?'':$nohup), 'r');
                         $progress++;
                         printf("progress: [%-50s] %d%%\r", str_repeat('#',$progress/$progress_count*50), $progress/$progress_count*100);
                         sleep(1);
@@ -132,10 +133,11 @@ class App{
                 sleep(5);
                 //关闭任务进程
                 if(isset(self::$_process_list[$key]['pid'])){
-                    foreach (self::$_process_list[$key]['pid'] as &$pid){
+                    foreach (self::$_process_list[$key]['pid'] as $pid){
                         pclose($pid);
                     }
                 }
+                $nohup =self::getNohup();
                 Console::log($key.' close success');
                 self::$_process_list[$key]=$list[$key];
                 if(!isset(self::$_process_list[$key]['worker_count']))self::$_process_list[$key]['worker_count']=1;
@@ -144,7 +146,7 @@ class App{
                     Utils::cache('listen'.$key,'true');
                     Utils::cache('close_worker','false');
                     for($i=1;$i<=self::$_process_list[$key]['worker_count'];$i++){
-                        self::$_process_list[$key]['pid'][] = popen('nohup ' .self::get_path().' '.Command::$_cmd.' worker '.$key.' &', 'r');
+                        self::$_process_list[$key]['pid'][] = popen((empty($nohup)?'':'nohup ') . self::get_path().' '.Command::$_cmd.' worker '.$key.(empty($nohup)?'':$nohup), 'r');
                     }
                 }
                 Console::log($key.' start success');
@@ -454,6 +456,37 @@ class App{
             }
         }
         return $php_path;
+    }
+    
+    private static function getNohup(){
+        $isNohup = Utils::config('is_nohup') === true;
+        $logPath=Utils::config('log.path')?:(START_PATH.DS.'logs');
+        self::mkDir($logPath);
+        if (!is_dir($logPath)){
+            Console::display('日志目录不可写',true);
+            die;
+        }
+        if (!$isNohup){
+            return '';
+        }
+        return ' >> ' . realpath($logPath).DIRECTORY_SEPARATOR.'output.out 2>&1 >/dev/null';
+    }
+    
+    /**
+     * @title 创建目录
+     * @author IT小强
+     * @createTime 2019-03-05 21:19:16
+     * @param string $dir 目录路径
+     * @param int $mode 权限
+     * @return bool
+     */
+    public static function mkDir($dir,$mode = 0777)
+    {
+        try {
+            return is_dir($dir) ? true : mkdir($dir, $mode, true);
+        } catch (\Exception $exception) {
+            return false;
+        }
     }
     
     public static function get_phpini_path(){
